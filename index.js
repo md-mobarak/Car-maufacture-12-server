@@ -21,12 +21,13 @@ async function run() {
     try {
         await client.connect();
         const productCollection = client.db('car-manufacture').collection('products')
+        const userCollection = client.db('car-manufacture').collection('user')
 
-        // app.post('/product', async (req, res) => {
-        //     const data = req.body;
-        //     const result = await productCollection.insertMany(data)
-        //     res.send(result)
-        // })
+        app.post('/product', async (req, res) => {
+            const data = req.body;
+            const result = await productCollection.insertMany(data)
+            res.send(result)
+        })
 
 
         app.get('/product', async (req, res) => {
@@ -40,6 +41,7 @@ async function run() {
             const result = await productCollection.findOne(filter)
             res.send(result)
         })
+
         app.put('/product/:id', async (req, res) => {
             const id = req.params.id;
             const updateInfo = req.body;
@@ -47,9 +49,10 @@ async function run() {
             const options = { upsert: true }
             const updateDoc = {
                 $set: {
-                    quantity: updateInfo.orderQuantity
+                    orderQuantity: updateInfo.orderQuantity
                 }
             }
+            console.log(updateDoc);
             const result = await productCollection.updateOne(filter, updateDoc, options);
             res.send(result)
         })
