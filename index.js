@@ -1,4 +1,5 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const app = express()
@@ -10,6 +11,7 @@ app.use(express.json())
 app.use(cors())
 // mobarakdb
 // ZLCt55voRj6DVf6X
+// 3ff1fc9c0c7240abc5816fe444ccee098ad021aa518cb2bd8002d11f353797141f033e3853960a56bd16be3a607e94db4aec9f32eac9d4f9f561dd2d5b827021
 
 
 
@@ -21,11 +23,35 @@ async function run() {
     try {
         await client.connect();
         const productCollection = client.db('car-manufacture').collection('products')
-        const userCollection = client.db('car-manufacture').collection('user')
+        const userCollection = client.db('allUser').collection('userOrder')
+        const allUserCollection = client.db('allUser').collection('users')
 
-        app.post('/product', async (req, res) => {
+
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body
+            const filter = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await allUserCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' })
+            res.send({ result, token })
+
+        })
+
+
+        app.post('/user', async (req, res) => {
             const data = req.body;
-            const result = await productCollection.insertMany(data)
+            const result = await userCollection.insertOne(data)
+            res.send(result)
+        })
+
+        app.get('/order', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email }
+            const result = await userCollection.find(query).toArray()
             res.send(result)
         })
 
@@ -52,11 +78,9 @@ async function run() {
                     orderQuantity: updateInfo.orderQuantity
                 }
             }
-            console.log(updateDoc);
             const result = await productCollection.updateOne(filter, updateDoc, options);
             res.send(result)
         })
-
 
     }
     finally {
