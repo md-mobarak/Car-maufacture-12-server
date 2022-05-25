@@ -114,6 +114,11 @@ async function run() {
             res.send(result)
         })
 
+        app.get('/allOrders', async (req, res) => {
+            const result = await userCollection.find().toArray()
+            res.send(result)
+        })
+
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id
             const filter = { _id: ObjectId(id) }
@@ -132,6 +137,34 @@ async function run() {
                 }
             }
             const result = await productCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
+        })
+
+        app.delete('/order/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.deleteOne(query)
+            res.send(result)
+        })
+
+
+        app.put('/profile/:email', async (req, res) => {
+            const email = req.params.email;
+            console.log(email);
+            const user = req.body
+            const filter = { email: email }
+            const options = { upsert: true }
+            const updateDoc = {
+                $set: user,
+            }
+            const result = await allUserCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
+        })
+
+        app.get('/profile/:email', async (req, res) => {
+            const email = req.params.email
+            const filter = { email: email }
+            const result = await allUserCollection.findOne(filter)
             res.send(result)
         })
 
