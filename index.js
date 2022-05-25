@@ -41,6 +41,7 @@ async function run() {
         const productCollection = client.db('car-manufacture').collection('products')
         const userCollection = client.db('allUser').collection('userOrder')
         const allUserCollection = client.db('allUser').collection('users')
+        const reviewsCollection = client.db('allUser').collection('reviews')
 
 
         app.get('/admin/:email', async (req, res) => {
@@ -171,6 +172,23 @@ async function run() {
         app.post('/addProduct', async (req, res) => {
             const data = req.body;
             const result = await productCollection.insertOne(data)
+            res.send(result)
+        })
+
+        app.get('/manageProduct', async (req, res) => {
+            const product = await productCollection.find().toArray()
+            res.send(product)
+        })
+
+        app.delete('/manageProduct/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(query)
+            res.send(result)
+        })
+        app.post('/review', async (req, res) => {
+            const data = req.body;
+            const result = await reviewsCollection.insertOne(data)
             res.send(result)
         })
 
