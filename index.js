@@ -1,10 +1,12 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const app = express()
 const port = process.env.PORT || 5000;
 require('dotenv').config()
+
 
 
 app.use(express.json())
@@ -35,6 +37,7 @@ function verifyJWT(req, res, next) {
 }
 
 
+
 async function run() {
     try {
         await client.connect();
@@ -42,6 +45,8 @@ async function run() {
         const userCollection = client.db('allUser').collection('userOrder')
         const allUserCollection = client.db('allUser').collection('users')
         const reviewsCollection = client.db('allUser').collection('reviews')
+
+
 
 
         app.get('/admin/:email', async (req, res) => {
@@ -147,6 +152,12 @@ async function run() {
             const result = await userCollection.deleteOne(query)
             res.send(result)
         })
+        app.get('/order/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = { _id: ObjectId(id) };
+            const result = await userCollection.findOne(query)
+            res.send(result)
+        })
 
 
         app.put('/profile/:email', async (req, res) => {
@@ -194,6 +205,19 @@ async function run() {
         app.get('/review', async (req, res) => {
             const review = await reviewsCollection.find().toArray()
             res.send(review)
+        })
+
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const product = req.body
+            const price = product.price
+            const amount = price * 100
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: "usd",
+                payment_method_types: ['card']
+            })
+            res.send({ clientSecret: paymentIntent.client_secret })
         })
 
     }
