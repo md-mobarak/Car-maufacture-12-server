@@ -208,7 +208,7 @@ async function run() {
         })
 
 
-        app.post('/create-payment-intent', async (req, res) => {
+        app.post('/create', async (req, res) => {
             const product = req.body
             const price = product.price
             const amount = price * 100
