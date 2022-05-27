@@ -208,7 +208,7 @@ async function run() {
         })
 
 
-        app.post('/create', async (req, res) => {
+        app.post('/creat', async (req, res) => {
             const product = req.body
             const price = product.price
             const amount = price * 100
